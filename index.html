@@ -100,6 +100,49 @@ header::after{content:"";position:absolute;right:-80px;top:-80px;width:340px;hei
 .ai-exec h4{font-family:'Orbitron',sans-serif;font-size:13px;color:var(--morado);margin-bottom:6px}
 .ai-note{font-size:11.5px;color:var(--muted);width:100%;margin-top:2px}
 
+/* ===== GRIMA · logo + hover-lore ===== */
+.gsvg{display:inline-block;width:56px;height:56px;line-height:0}
+.gsvg svg{width:100%;height:100%;display:block;filter:drop-shadow(0 0 10px rgba(0,255,209,.45))}
+.gsvg-sm{width:44px;height:44px}
+.gsvg-ink{width:40px;height:40px}
+.grima-zone{position:relative;display:inline-block}
+.grima-badge{width:78px;height:78px;border-radius:20px;display:grid;place-items:center;cursor:help;flex:none;
+  background:radial-gradient(circle at 50% 40%,rgba(255,255,255,.18),rgba(0,255,209,.04));
+  border:1px solid rgba(255,255,255,.28);transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s}
+.grima-badge:hover{transform:translateY(-2px) scale(1.04);box-shadow:0 0 28px rgba(0,255,209,.45)}
+.grima-card{position:absolute;top:92px;left:0;width:430px;z-index:80;opacity:0;visibility:hidden;
+  transform:translateY(-8px);transition:opacity .3s,transform .3s,visibility .3s;font-family:'Exo 2',sans-serif;
+  background:linear-gradient(160deg,#111a30,#0b1120);border:1px solid rgba(140,120,255,.16);border-radius:18px;
+  padding:22px 24px;box-shadow:0 40px 90px -30px rgba(0,0,0,.8),0 0 40px -20px rgba(123,95,255,.6);color:#EDF1FB;text-align:left}
+.grima-zone:hover .grima-card,.grima-card.open{opacity:1;visibility:visible;transform:translateY(0)}
+.grima-card::before{content:"";position:absolute;top:-8px;left:30px;width:16px;height:16px;rotate:45deg;
+  background:#111a30;border-left:1px solid rgba(140,120,255,.16);border-top:1px solid rgba(140,120,255,.16)}
+.gc-head{display:flex;align-items:center;gap:14px;margin-bottom:12px}
+.gc-title{font-family:'Orbitron',sans-serif;font-weight:700;font-size:17px;color:#fff}
+.gc-sub{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#00FFD1;margin-top:2px}
+.gc-lore{font-size:12.5px;color:#93A0C0;font-style:italic;line-height:1.6;padding:12px 0;
+  border-top:1px solid rgba(140,120,255,.14);border-bottom:1px solid rgba(140,120,255,.14)}
+.gc-cols{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:14px}
+.gc-cols h5{font-family:'Orbitron',sans-serif;font-size:9.5px;letter-spacing:2px;color:#a892ff;margin-bottom:10px}
+.eye{display:flex;gap:9px;margin-bottom:9px}
+.eye .n{width:20px;height:20px;border-radius:50%;flex:none;display:grid;place-items:center;
+  font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;color:#0b1120;
+  background:linear-gradient(135deg,#FFB547,#ff8f5e)}
+.eye b{display:block;font-size:12.5px;color:#EDF1FB;line-height:1.2}
+.eye i{font-size:10.5px;color:#63709A;font-style:normal}
+.gc-foot{font-size:12px;color:#93A0C0;font-style:italic;text-align:center;margin-top:16px;
+  padding-top:12px;border-top:1px solid rgba(140,120,255,.14)}
+.gc-author{font-size:11px;color:#7d88ad;line-height:1.55;margin-top:12px;padding-top:12px;
+  border-top:1px solid rgba(140,120,255,.14)}
+.gc-author b{color:#c8b8ff}.gc-author i{color:#00FFD1}
+.foot-brand{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:16px;
+  padding-bottom:16px;border-bottom:1px solid var(--line)}
+.gsvg-ink svg{filter:none;opacity:.9}
+.foot-sign{text-align:left;font-size:12px;color:var(--muted)}
+.foot-sign b{color:var(--ink);font-weight:700}
+.foot-sign span{display:block;font-size:10.5px;color:var(--muted);margin-top:3px;max-width:520px}
+@media(max-width:560px){.grima-card{width:min(88vw,300px)}.grima-card .gc-cols{grid-template-columns:1fr}}
+
 /* TABLE */
 .tbl-wrap{overflow-x:auto;margin-top:6px;border-radius:10px;border:1px solid var(--line)}
 table{width:100%;border-collapse:collapse;font-size:12.5px}
@@ -125,9 +168,35 @@ footer b{color:var(--ink);font-weight:700}
 <header>
   <div class="wrap">
     <div class="h-top">
-      <div class="h-title">
-        <h1>Dashboard de Devoluciones · Post Venta</h1>
-        <p>Análisis de control de devoluciones y reclamos para la toma de decisiones</p>
+      <div style="display:flex;align-items:center;gap:20px;min-width:0">
+        <div class="grima-zone">
+          <div class="grima-badge"><span class="gsvg"></span></div>
+          <div class="grima-card">
+            <div class="gc-head">
+              <span class="gsvg gsvg-sm"></span>
+              <div><div class="gc-title">Grima · El dragón caído</div><div class="gc-sub">El que todo lo observa</div></div>
+            </div>
+            <div class="gc-lore">Grima es un dragón caído, un demonio exiliado y condenado a la soledad. De esa condena nació su don: seis ojos que no descansan, que lo ven todo a la vez para que nada vuelva a tomarlo por sorpresa.</div>
+            <div class="gc-cols">
+              <div><h5>DOMINAN EL TIEMPO</h5>
+                <div class="eye"><span class="n">1</span><div><b>Pasado</b><i>lo que ya ocurrió</i></div></div>
+                <div class="eye"><span class="n">2</span><div><b>Presente</b><i>lo que pasa ahora</i></div></div>
+                <div class="eye"><span class="n">3</span><div><b>Futuro</b><i>hacia dónde va todo</i></div></div>
+              </div>
+              <div><h5>DOMINAN LA ACCIÓN</h5>
+                <div class="eye"><span class="n">4</span><div><b>Estrategia</b><i>trazar el rumbo</i></div></div>
+                <div class="eye"><span class="n">5</span><div><b>Oportunidades</b><i>ver lo que otros no</i></div></div>
+                <div class="eye"><span class="n">6</span><div><b>Amenazas</b><i>detectar el riesgo</i></div></div>
+              </div>
+            </div>
+            <div class="gc-foot">Seis ojos para ver todo el negocio a la vez y decidir con ventaja.</div>
+            <div class="gc-author">Creado por <b>Alexis B. Ramírez Ramírez</b> (alias <b>Shakdows</b>). El nombre nació entre hermanos y se selló con el apodo de póker <i>"shake down"</i>. Marca personal usada en productos <b>VERONIX</b>.</div>
+          </div>
+        </div>
+        <div class="h-title">
+          <h1>Dashboard de Devoluciones · Post Venta</h1>
+          <p>Análisis de control de devoluciones y reclamos para la toma de decisiones</p>
+        </div>
       </div>
       <div class="h-badge">🔄 Actualizado en tiempo real</div>
     </div>
@@ -244,6 +313,13 @@ footer b{color:var(--ink);font-weight:700}
   </div>
 
   <footer>
+    <div class="foot-brand">
+      <span class="gsvg gsvg-ink"></span>
+      <div class="foot-sign">
+        <b>Grima · El dragón caído</b> — marca personal de <b>Shakdows</b>
+        <span>Alexis Brian Ramírez Ramírez · CEO · Negocios Internacionales · Administrador de Empresas · Developer · Data Science</span>
+      </div>
+    </div>
     <b>Peru Tractor S.R.L.</b> · Control de Devoluciones Post Venta · Elaborado por Cayetano Rondinel Pino<br>
     Dashboard analítico generado sobre <span id="f-total">—</span> registros · <span id="f-fecha">—</span>
   </footer>
@@ -540,6 +616,30 @@ $('aiBtn').addEventListener('click',aiAnalyze);
 ['f-tipo','f-motivo','f-vend','f-nc'].forEach(id=>$(id).addEventListener('change',render));
 $('search').addEventListener('input',()=>renderTable(curRows));
 $('reset').addEventListener('click',()=>{['f-tipo','f-motivo','f-vend','f-nc'].forEach(id=>$(id).value='');$('search').value='';render();});
+
+/* ===== GRIMA · inyección del sigilo (dragón de seis ojos) + soporte táctil ===== */
+const GRIMA_SVG=`<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+<defs>
+ <linearGradient id="gg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7B5FFF"/><stop offset="1" stop-color="#00FFD1"/></linearGradient>
+ <radialGradient id="eyeG" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFE9B0"/><stop offset="55%" stop-color="#FFB547"/><stop offset="100%" stop-color="#ff7a3c"/></radialGradient>
+ <filter id="glowG" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="1.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<polygon points="60,6 106,32 106,88 60,114 14,88 14,32" fill="none" stroke="url(#gg)" stroke-width="2" opacity=".55"/>
+<polygon points="60,14 99,36 99,84 60,106 21,84 21,36" fill="none" stroke="url(#gg)" stroke-width="1" opacity=".28"/>
+<g filter="url(#glowG)" stroke="url(#gg)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" fill="none">
+ <path d="M60 30 L40 16 L30 26"/><path d="M60 30 L80 16 L90 26"/>
+ <path d="M34 40 Q60 26 86 40"/>
+ <path d="M34 40 L30 64 L44 88 L60 96 L76 88 L90 64 L86 40"/>
+ <path d="M60 62 L52 80 M60 62 L68 80 M60 62 L60 96"/>
+ <path d="M30 64 L16 74 L26 78" opacity=".8"/><path d="M90 64 L104 74 L94 78" opacity=".8"/>
+</g>
+<g>
+ <polygon points="45,44 49,48 45,52 41,48" fill="url(#eyeG)"/><polygon points="45,56 49,60 45,64 41,60" fill="url(#eyeG)"/><polygon points="45,68 49,72 45,76 41,72" fill="url(#eyeG)"/>
+ <polygon points="75,44 79,48 75,52 71,48" fill="url(#eyeG)"/><polygon points="75,56 79,60 75,64 71,60" fill="url(#eyeG)"/><polygon points="75,68 79,72 75,76 71,72" fill="url(#eyeG)"/>
+</g></svg>`;
+document.querySelectorAll('.gsvg').forEach(el=>el.innerHTML=GRIMA_SVG);
+document.querySelectorAll('.grima-badge').forEach(b=>b.addEventListener('click',()=>{
+  const c=b.parentElement.querySelector('.grima-card');if(c)c.classList.toggle('open');}));
 
 render();
 </script>
