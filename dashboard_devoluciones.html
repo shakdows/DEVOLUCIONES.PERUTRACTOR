@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard de Devoluciones · Post Venta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#eef1f8; --card:#ffffff; --ink:#161d33; --ink2:#3a4364; --muted:#6b7392;
+  --line:#e3e7f2; --morado:#6d4eff; --teal:#0bb89a; --amber:#f5a623; --rojo:#e5484d;
+  --azul:#3b82f6; --grad:linear-gradient(135deg,#6d4eff 0%,#3b82f6 100%);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Exo 2',system-ui,sans-serif;background:var(--bg);color:var(--ink);
+  -webkit-font-smoothing:antialiased;padding:0 0 60px}
+.wrap{max-width:1400px;margin:0 auto;padding:0 24px}
+
+/* HEADER */
+header{background:var(--grad);color:#fff;padding:30px 0 90px;position:relative;overflow:hidden}
+header::after{content:"";position:absolute;right:-80px;top:-80px;width:340px;height:340px;
+  background:radial-gradient(circle,rgba(255,255,255,.18),transparent 70%);border-radius:50%}
+.h-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px}
+.h-title h1{font-family:'Orbitron',sans-serif;font-weight:900;font-size:26px;letter-spacing:.5px}
+.h-title p{opacity:.9;font-size:14px;margin-top:6px;font-weight:300}
+.h-badge{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
+  padding:8px 16px;border-radius:30px;font-size:12.5px;font-weight:600;backdrop-filter:blur(6px)}
+.h-meta{margin-top:14px;font-size:12.5px;opacity:.85;display:flex;gap:22px;flex-wrap:wrap}
+.h-meta b{font-weight:600}
+
+/* FILTER BAR */
+.filters{background:var(--card);border-radius:16px;box-shadow:0 8px 30px rgba(22,29,51,.08);
+  margin-top:-64px;padding:18px 22px;display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;
+  position:relative;z-index:5;border:1px solid var(--line)}
+.f-group{display:flex;flex-direction:column;gap:5px;min-width:150px;flex:1}
+.f-group label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+.f-group select{font-family:'Exo 2';font-size:14px;padding:9px 12px;border:1.5px solid var(--line);
+  border-radius:9px;background:#f7f9fd;color:var(--ink);cursor:pointer;font-weight:500;outline:none;transition:.15s}
+.f-group select:focus{border-color:var(--morado);background:#fff}
+.f-reset{background:var(--ink);color:#fff;border:none;padding:10px 18px;border-radius:9px;
+  font-family:'Exo 2';font-weight:600;font-size:13.5px;cursor:pointer;transition:.15s;white-space:nowrap}
+.f-reset:hover{background:var(--morado)}
+
+/* KPI */
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:22px}
+.kpi{background:var(--card);border-radius:14px;padding:16px 16px 14px;border:1px solid var(--line);
+  box-shadow:0 4px 14px rgba(22,29,51,.05);position:relative;overflow:hidden;transition:.2s}
+.kpi:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(22,29,51,.10)}
+.kpi .bar{position:absolute;left:0;top:0;bottom:0;width:4px}
+.kpi .lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.kpi .val{font-family:'Orbitron',sans-serif;font-size:30px;font-weight:700;margin-top:6px;line-height:1}
+.kpi .sub{font-size:11.5px;color:var(--muted);margin-top:6px;font-weight:500}
+
+/* GRID */
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:18px;margin-top:20px}
+.panel{background:var(--card);border-radius:16px;border:1px solid var(--line);
+  box-shadow:0 4px 16px rgba(22,29,51,.05);padding:20px}
+.col-6{grid-column:span 6}.col-4{grid-column:span 4}.col-8{grid-column:span 8}.col-12{grid-column:span 12}
+.p-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.p-title{font-family:'Orbitron',sans-serif;font-size:14.5px;font-weight:700;color:var(--ink)}
+.p-sub{font-size:12px;color:var(--muted);margin-bottom:14px;font-weight:400}
+.chart-box{position:relative;height:260px}
+.chart-box.tall{height:300px}
+
+/* insight chips */
+.insight{margin-top:14px;background:#f7f9fd;border-left:3px solid var(--amber);padding:10px 14px;
+  border-radius:0 8px 8px 0;font-size:12.5px;color:var(--ink2);line-height:1.5}
+.insight b{color:var(--ink)}
+
+/* AI recommendation cards */
+.reco{margin-top:14px;background:linear-gradient(135deg,#f3f0ff 0%,#eefaf7 100%);
+  border:1px solid #e0dcff;border-radius:12px;padding:13px 15px 13px 44px;position:relative;
+  font-size:12.8px;color:var(--ink2);line-height:1.55;min-height:44px}
+.reco::before{content:"🤖";position:absolute;left:13px;top:12px;font-size:17px}
+.reco .rt{display:block;font-weight:700;color:var(--morado);font-size:11px;text-transform:uppercase;
+  letter-spacing:.5px;margin-bottom:3px}
+.reco b{color:var(--ink)}
+.reco.loading{color:var(--muted);font-style:italic}
+.reco .spin{display:inline-block;width:13px;height:13px;border:2px solid #d6cdff;border-top-color:var(--morado);
+  border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* AI control panel */
+.ai-panel{background:var(--card);border:1px solid var(--line);border-radius:16px;
+  box-shadow:0 4px 16px rgba(22,29,51,.05);padding:18px 22px;margin-top:20px;
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.ai-panel .ai-txt{flex:1;min-width:220px}
+.ai-panel .ai-txt h3{font-family:'Orbitron',sans-serif;font-size:15px;color:var(--ink);display:flex;align-items:center;gap:8px}
+.ai-panel .ai-txt p{font-size:12.5px;color:var(--muted);margin-top:4px}
+.ai-btn{background:var(--grad);color:#fff;border:none;padding:12px 22px;border-radius:11px;
+  font-family:'Exo 2';font-weight:700;font-size:14px;cursor:pointer;transition:.18s;
+  box-shadow:0 6px 18px rgba(109,78,255,.28);white-space:nowrap}
+.ai-btn:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(109,78,255,.4)}
+.ai-btn:disabled{opacity:.6;cursor:wait;transform:none}
+.ai-exec{width:100%;margin-top:4px;background:#faf9ff;border-left:4px solid var(--morado);
+  border-radius:0 10px 10px 0;padding:14px 16px;font-size:13.2px;line-height:1.6;color:var(--ink2);display:none}
+.ai-exec.show{display:block}
+.ai-exec h4{font-family:'Orbitron',sans-serif;font-size:13px;color:var(--morado);margin-bottom:6px}
+.ai-note{font-size:11.5px;color:var(--muted);width:100%;margin-top:2px}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;margin-top:6px;border-radius:10px;border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{background:#f4f6fc;text-align:left;padding:11px 12px;font-weight:700;color:var(--ink2);
+  text-transform:uppercase;font-size:10.5px;letter-spacing:.4px;position:sticky;top:0;white-space:nowrap}
+td{padding:10px 12px;border-top:1px solid var(--line);color:var(--ink2);vertical-align:top}
+tr:hover td{background:#f9fafe}
+.tag{display:inline-block;padding:3px 9px;border-radius:20px;font-size:10.5px;font-weight:700;white-space:nowrap}
+.t-dev{background:#eae5ff;color:#5a3fd6}.t-rec{background:#fde8cc;color:#b7791f}
+.t-pend{background:#fde3e4;color:#c93a3f}.t-pag{background:#d5f5ec;color:#08815f}
+.t-na{background:#e8ebf3;color:#6b7392}
+.search{width:100%;max-width:320px;padding:9px 14px;border:1.5px solid var(--line);border-radius:9px;
+  font-family:'Exo 2';font-size:13.5px;outline:none}
+.search:focus{border-color:var(--morado)}
+footer{text-align:center;margin-top:30px;font-size:12px;color:var(--muted)}
+footer b{color:var(--ink);font-weight:700}
+.empty{text-align:center;padding:40px;color:var(--muted);font-size:14px}
+@media(max-width:1080px){.kpis{grid-template-columns:repeat(3,1fr)}.col-6,.col-4,.col-8{grid-column:span 12}}
+@media(max-width:620px){.kpis{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="h-top">
+      <div class="h-title">
+        <h1>Dashboard de Devoluciones · Post Venta</h1>
+        <p>Análisis de control de devoluciones y reclamos para la toma de decisiones</p>
+      </div>
+      <div class="h-badge">🔄 Actualizado en tiempo real</div>
+    </div>
+    <div class="h-meta">
+      <span>📄 Formato <b>PT-DG-002-REV.1</b></span>
+      <span>📅 Periodo <b id="m-periodo">—</b></span>
+      <span>🗂️ Fuente <b>Control_de_devoluciones.xlsx</b></span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- FILTROS -->
+  <div class="filters">
+    <div class="f-group">
+      <label>Tipo</label>
+      <select id="f-tipo"><option value="">Todos</option></select>
+    </div>
+    <div class="f-group">
+      <label>Motivo</label>
+      <select id="f-motivo"><option value="">Todos</option></select>
+    </div>
+    <div class="f-group">
+      <label>Vendedor</label>
+      <select id="f-vend"><option value="">Todos</option></select>
+    </div>
+    <div class="f-group">
+      <label>Estado Nota de Crédito</label>
+      <select id="f-nc"><option value="">Todos</option></select>
+    </div>
+    <button class="f-reset" id="reset">↺ Limpiar filtros</button>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpis" id="kpis"></div>
+
+  <!-- AI PANEL -->
+  <div class="ai-panel">
+    <div class="ai-txt">
+      <h3>🤖 Recomendaciones con IA</h3>
+      <p>Cada gráfico incluye una recomendación que se recalcula automáticamente con los filtros. Pulsa el botón para un análisis ejecutivo profundo generado por Claude.</p>
+    </div>
+    <button class="ai-btn" id="aiBtn">✨ Generar análisis ejecutivo</button>
+    <div class="ai-exec" id="aiExec"></div>
+    <div class="ai-note" id="aiNote"></div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="grid">
+    <div class="panel col-8">
+      <div class="p-head"><span class="p-title">① Motivos de devolución (Pareto)</span></div>
+      <div class="p-sub">Priorización de causas raíz — ¿dónde atacar primero?</div>
+      <div class="chart-box tall"><canvas id="cMotivo"></canvas></div>
+      <div class="insight" id="ins-motivo"></div>
+      <div class="reco" id="reco-motivo"></div>
+    </div>
+    <div class="panel col-4">
+      <div class="p-head"><span class="p-title">② Tipo de caso</span></div>
+      <div class="p-sub">Devolución vs. Reclamo</div>
+      <div class="chart-box tall"><canvas id="cTipo"></canvas></div>
+      <div class="reco" id="reco-tipo"></div>
+    </div>
+
+    <div class="panel col-6">
+      <div class="p-head"><span class="p-title">③ Estado de Nota de Crédito</span></div>
+      <div class="p-sub">Exposición financiera pendiente de regularizar</div>
+      <div class="chart-box"><canvas id="cNC"></canvas></div>
+      <div class="insight" id="ins-nc"></div>
+      <div class="reco" id="reco-nc"></div>
+    </div>
+    <div class="panel col-6">
+      <div class="p-head"><span class="p-title">④ Devoluciones por vendedor</span></div>
+      <div class="p-sub">Concentración por asesor comercial</div>
+      <div class="chart-box"><canvas id="cVend"></canvas></div>
+      <div class="reco" id="reco-vend"></div>
+    </div>
+
+    <div class="panel col-8">
+      <div class="p-head"><span class="p-title">⑤ Tendencia semanal</span></div>
+      <div class="p-sub">Evolución de casos e ítems devueltos en el tiempo</div>
+      <div class="chart-box"><canvas id="cTrend"></canvas></div>
+      <div class="reco" id="reco-trend"></div>
+    </div>
+    <div class="panel col-4">
+      <div class="p-head"><span class="p-title">⑥ Ciclo de resolución</span></div>
+      <div class="p-sub">Días desde ingreso hasta V°B° de almacén</div>
+      <div class="chart-box"><canvas id="cCiclo"></canvas></div>
+      <div class="reco" id="reco-ciclo"></div>
+    </div>
+
+    <div class="panel col-12">
+      <div class="p-head"><span class="p-title">⑦ Clientes con más devoluciones</span></div>
+      <div class="p-sub">Top clientes — seguimiento y gestión de relación</div>
+      <div class="chart-box"><canvas id="cCli"></canvas></div>
+      <div class="reco" id="reco-cli"></div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="panel col-12">
+      <div class="p-head" style="margin-bottom:14px">
+        <span class="p-title">📋 Detalle de registros</span>
+        <input class="search" id="search" placeholder="🔍 Buscar cliente, documento, N/P...">
+      </div>
+      <div class="tbl-wrap">
+        <table id="tbl">
+          <thead><tr>
+            <th>N° Doc</th><th>Fecha</th><th>Tipo</th><th>Cliente</th><th>Vend.</th>
+            <th>Motivo</th><th>Cant.</th><th>N/P</th><th>Ciclo</th><th>NC</th><th>Estado NC</th>
+          </tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <b>Peru Tractor S.R.L.</b> · Control de Devoluciones Post Venta · Elaborado por Cayetano Rondinel Pino<br>
+    Dashboard analítico generado sobre <span id="f-total">—</span> registros · <span id="f-fecha">—</span>
+  </footer>
+</div>
+
+<script>
+const DATA = [{"item": 1.0, "tipo": "RECLAMO", "doc": "26 -101", "factura": null, "fecha": "2026-06-02", "cliente": "GDMAQ REPUESTOS Y SERVICIOS S.A.C", "vendedor": "GGR", "motivo": "Falla de funcionamiento", "cant": 4.0, "nparte": "5V7199CGR", "envio_fabrica": null, "fecha_vb": "2026-06-04", "ciclo_dias": 2, "nota_credito": "SI", "estado_nc": "Pagado", "obs": "SE HIZO NC"}, {"item": 2.0, "tipo": "DEVOLUCIÓN", "doc": "26 - 102", "factura": null, "fecha": "2026-06-03", "cliente": "MELINDA MORALES QUITO", "vendedor": "JPR", "motivo": "Otros", "cant": 1.0, "nparte": "2S5926CGR", "envio_fabrica": null, "fecha_vb": "2026-06-04", "ciclo_dias": 1, "nota_credito": "SI", "estado_nc": "Pagado", "obs": "CLIENTE NO SE ACERCÓ A RECOGER"}, {"item": 3.0, "tipo": "DEVOLUCIÓN", "doc": "26 - 103", "factura": null, "fecha": "2026-06-02", "cliente": "TORIBIO CRUZ MAMANI", "vendedor": "CHP", "motivo": "Error código (Cliente)", "cant": 8.0, "nparte": "1U3302CTP", "envio_fabrica": null, "fecha_vb": "2026-06-04", "ciclo_dias": 2, "nota_credito": "SI", "estado_nc": "Pendiente", "obs": "NO INDICA EN EL FORMATO SI ES ERROE DE QUIEN"}, {"item": 4.0, "tipo": "DEVOLUCIÓN", "doc": "26 - 104", "factura": null, "fecha": "2026-05-29", "cliente": "RENTRAC EQUIPOS Y SERVICIOS S.C.R.L", "vendedor": "MSL", "motivo": "Error código (Cliente)", "cant": 5.0, "nparte": "4P9961CTP, 4P9962CTP, 4P9963, 4P9964", "envio_fabrica": null, "fecha_vb": "2026-06-05", "ciclo_dias": 7, "nota_credito": "SI", "estado_nc": "Pagado", "obs": "NO SE SABE CUANDO ENTREGÓ MARI"}, {"item": 5.0, "tipo": "DEVOLUCIÓN", "doc": "26 - 105", "factura": null, "fecha": "2026-05-29", "cliente": "RENTRAC EQUIPOS Y SERVICIOS S.C.R.L", "vendedor": "MSL", "motivo": "Error código (Cliente)", "cant": 1.0, "nparte": "5M5837WG", "envio_fabrica": null, "fecha_vb": "2026-06-05", "ciclo_dias": 7, "nota_credito": "SI", "estado_nc": "Pagado", "obs": "NO SE SABE CUANDO ENTREGÓ MARI"}, {"item": 6.0, "tipo": "RECLAMO", "doc": "26 - 106", "factura": null, "fecha": "2026-05-13", "cliente": "J.L.G CENTRO DIESEL E.I.R.L", "vendedor": "NSI", "motivo": "Falla de funcionamiento", "cant": 1.0, "nparte": "7W7031DISA", "envio_fabrica": null, "fecha_vb": "2026-06-04", "ciclo_dias": 22, "nota_credito": "NO", "estado_nc": "No aplica", "obs": "INYECTOR EN BUEN ESTADO"}, {"item": 7.0, "tipo": "DEVOLUCIÓN", "doc": "26 107", "factura": null, "fecha": "2026-06-06", "cliente": "METRACON INGENIEROS SOCIEDAD ANONIMA CERRADA", "vendedor": "GGR", "motivo": "Error código (Cliente)", "cant": 2.0, "nparte": "1663359CTP", "envio_fabrica": null, "fecha_vb": "2026-06-08", "ciclo_dias": 2, "nota_credito": "SI", "estado_nc": "Pagado", "obs": null}, {"item": 8.0, "tipo": "RECLAMO", "doc": "26 - 108", "factura": null, "fecha": "2026-06-11", "cliente": "INVERSIONES GENERALES ISHA S.A.C", "vendedor": "JPR", "motivo": "Falla de funcionamiento", "cant": 1.0, "nparte": "7N4170CGR", "envio_fabrica": null, "fecha_vb": "2026-06-12", "ciclo_dias": 1, "nota_credito": "SI", "estado_nc": "Pendiente", "obs": null}, {"item": 9.0, "tipo": "RECLAMO", "doc": "26 - 109", "factura": null, "fecha": "2026-06-10", "cliente": "DIESEL TRUCK PARTS", "vendedor": "SGC", "motivo": "Falla de funcionamiento", "cant": 2.0, "nparte": "9R1510CTP", "envio_fabrica": null, "fecha_vb": "2026-06-11", "ciclo_dias": 1, "nota_credito": "SI", "estado_nc": "No aplica", "obs": "DUPLICADO NO VALE"}, {"item": 10.0, "tipo": "DEVOLUCIÓN", "doc": "26 - 110", "factura": null, "fecha": "2026-06-09", "cliente": "MADERAS DEL REYNO", "vendedor": "MSL", "motivo": "Error código (Cliente)", "cant": 2.0, "nparte": "6Y2538/2P1373NTN", "envio_fabrica": null, "fecha_vb": "2026-06-12", "ciclo_dias": 3, "nota_credito": "NO", "estado_nc": "No aplica", "obs": "PUEDE QUEDAR PARA STOCK"}, {"item": 11.0, "tipo": "DEVOLUCIÓN", "doc": "26 - 111", "factura": null, "fecha": "2026-06-09", "cliente": "MADERAS DEL REYNO", "vendedor": "MSL", "motivo": "Error código (Cliente)", "cant": 3.0, "nparte": "8B6342/8B6343, 8B6342, 8B6343", "envio_fabrica": null, "fecha_vb": "2026-06-11", "ciclo_dias": 2, "nota_credito": "NO", "estado_nc": "No aplica", "obs": "PUEDE QUEDAR PARA STOCK"}, {"item": 12.0, "tipo": "DEVOLUCIÓN", "doc": "26 - 112", "factura": null, "fecha": "2026-06-11", "cliente": "TRACTOPARTES ORIENTE SAC", "vendedor": "HRS", "motivo": "Otros", "cant": 28.0, "nparte": "0931434CTP, 5P9757CTP, 6V5100CTP", "envio_fabrica": null, "fecha_vb": "2026-06-11", "ciclo_dias": 0, "nota_credito": "SI", "estado_nc": "Pagado", "obs": "NO TIENE LA BOLSA DE CTP, POR ESO DEVUELVE"}, {"item": 13.0, "tipo": "DEVOLUCIÓN", "doc": "26 - 113", "factura": null, "fecha": "2026-06-12", "cliente": "KANGAL TRACTORS PARTS E.I.R.L", "vendedor": "JPR", "motivo": "No hay en stock", "cant": 4.0, "nparte": "9R0158CTP", "envio_fabrica": null, "fecha_vb": "2026-06-12", "ciclo_dias": 0, "nota_credito": "SI", "estado_nc": "Pendiente", "obs": "ERROR ALMACEN"}, {"item": 14.0, "tipo": "DEVOLUCIÓN", "doc": "26 - 114", "factura": null, "fecha": "2026-06-12", "cliente": "INVERSIONES FORESTALES N Y S E.I.R.L", "vendedor": "MSL", "motivo": "Error código (Cliente)", "cant": 4.0, "nparte": "3285574CTP", "envio_fabrica": null, "fecha_vb": "2026-06-12", "ciclo_dias": 0, "nota_credito": "SI", "estado_nc": "Pendiente", "obs": null}, {"item": 15.0, "tipo": "RECLAMO", "doc": "26 - 115", "factura": null, "fecha": "2026-06-08", "cliente": "SUPERVAN SAC", "vendedor": "GGR", "motivo": "Falla de funcionamiento", "cant": 2.0, "nparte": "6Y1089CTP, 6Y1090CTP", "envio_fabrica": null, "fecha_vb": "2026-06-15", "ciclo_dias": 7, "nota_credito": "SI", "estado_nc": "Pendiente", "obs": "SE FIRMA MÁS DE UNA VEZ, POR EROR ASESOR, LO VERIFICA JEFE EL 13/06, RECIEN LO PASA ALMACEN EL 15/06"}, {"item": 16.0, "tipo": "RECLAMO", "doc": "26 - 116", "factura": null, "fecha": "2026-06-06", "cliente": "AGUIRRE DE LOS RIOS SONIA MILAGRO", "vendedor": "NSI", "motivo": "Difiere del original", "cant": 2.0, "nparte": "9W6680DUR", "envio_fabrica": null, "fecha_vb": "2026-06-13", "ciclo_dias": 7, "nota_credito": "SI", "estado_nc": "Pendiente", "obs": "SE QUEDA POR DÍAS EN ALMACEN, YA QUE NO CREEN QUE ES RECLAMO, SUBE EL SEÑOR HUMBERTO, SE ACEPTA"}, {"item": 17.0, "tipo": "DEVOLUCIÓN", "doc": "26 - 117", "factura": null, "fecha": "2026-06-12", "cliente": "M Y G HYDRALIC SERVICE S.A.C", "vendedor": "JPR", "motivo": "Sin especificar", "cant": 8.0, "nparte": "1D4628, 5P8249", "envio_fabrica": null, "fecha_vb": "2026-06-15", "ciclo_dias": 3, "nota_credito": "SI", "estado_nc": "Pendiente", "obs": "LO VERIFICA JEFE EL 13/06,  SE PEIRDE, APARECE EL MISMO 13, RECIEN LO PASA ALMACEN EL 15/06"}, {"item": 18.0, "tipo": "DEVOLUCIÓN", "doc": "26 - 118", "factura": null, "fecha": "2026-06-10", "cliente": "DIESEL TRUCK PARTS", "vendedor": "SGC", "motivo": "Falla de funcionamiento", "cant": 2.0, "nparte": "9R1510CTP", "envio_fabrica": null, "fecha_vb": "2026-06-13", "ciclo_dias": 3, "nota_credito": "SI", "estado_nc": "Pendiente", "obs": null}, {"item": 19.0, "tipo": "DEVOLUCIÓN", "doc": "26-120", "factura": null, "fecha": "2026-06-15", "cliente": "INVERSIONES Y SERVICIOS RANDY", "vendedor": "MSL", "motivo": "Falla de funcionamiento", "cant": 2.0, "nparte": "1T1331, 1T1051", "envio_fabrica": null, "fecha_vb": "2026-06-18", "ciclo_dias": 3, "nota_credito": "SI", "estado_nc": "Pendiente", "obs": "FALTA INFORME TECNICO, FACTURA Y GUIA, INCOMPLETO (16/06)// falta guia e informe tecnico // SE SUBIO 17/09"}, {"item": 20.0, "tipo": "DEVOLUCIÓN", "doc": "26-119", "factura": null, "fecha": "2026-06-17", "cliente": "J&M MUNDO PARTS", "vendedor": "SGC", "motivo": "Otros", "cant": 2.0, "nparte": "9W7216DUR, 9W7225ACR", "envio_fabrica": null, "fecha_vb": "2026-06-17", "ciclo_dias": 0, "nota_credito": "NO", "estado_nc": "No aplica", "obs": "SOLO DOCUMENTARIO, CAMBIO DE DIRECCIÓN - LO RECIBIÓ ELSEÑOR VICTOR"}, {"item": 21.0, "tipo": "RECLAMO", "doc": "26-121", "factura": null, "fecha": "2026-06-15", "cliente": "CONTRATISTAS Y MAQUINARIAS SELVA EIRL", "vendedor": "SGC", "motivo": "Difiere del original", "cant": 1.0, "nparte": "4P9828CTP", "envio_fabrica": null, "fecha_vb": "2026-06-18", "ciclo_dias": 3, "nota_credito": "SI", "estado_nc": "Pendiente", "obs": "FALTA CARTA FIRMADA POR EL CLIENTE, AYER SÑR VICTOR NO RESPIDIO EL CLORREO 16/06, RECIEN SE HARÁ LO DE LA GUIA CUNADO TENGAMOS LA CARTA CORRECTA // SE SUBE EL 18/06"}, {"item": 22.0, "tipo": "DEVOLUCIÓN", "doc": "26-122", "factura": null, "fecha": "2026-06-18", "cliente": "RODRIGUEZ CASTAÑEDA WILLIAM HUBER", "vendedor": "HRS", "motivo": "Otros", "cant": 2.0, "nparte": "1118010.0", "envio_fabrica": null, "fecha_vb": "2026-06-19", "ciclo_dias": 1, "nota_credito": "SI", "estado_nc": "Pendiente", "obs": "LO TIENE EL SEÑOR JAIME, SE SUBIO HOY 19/06"}, {"item": 23.0, "tipo": "DEVOLUCIÓN", "doc": "26-123", "factura": null, "fecha": "2026-06-17", "cliente": "RAD AGRO & MAQUINARIAS SAC", "vendedor": "NSI", "motivo": "Error código (Vendedor)", "cant": 1.0, "nparte": "1T0022CTP", "envio_fabrica": null, "fecha_vb": "2026-06-18", "ciclo_dias": 1, "nota_credito": "SI", "estado_nc": "Pendiente", "obs": "SE HIZO EL FORMATO DE DEVOLUCION AQUI"}, {"item": 24.0, "tipo": "DEVOLUCIÓN", "doc": "26-124", "factura": null, "fecha": "2026-06-18", "cliente": "RODRIGUEZ VALERA HARVEY JAVIER", "vendedor": "JPR", "motivo": "Otros", "cant": 3.0, "nparte": "2H3934CTP, 6V6921CTP, 1519932CTP", "envio_fabrica": null, "fecha_vb": "2026-06-19", "ciclo_dias": 1, "nota_credito": "SI", "estado_nc": "Pendiente", "obs": "SON SIETE CODIGOS, FUE ERROR DE DESPACHO, ERROR QUE AFECTO AL SEÑOR HUMBERTO Y A JOHA"}, {"item": 25.0, "tipo": "DEVOLUCIÓN", "doc": "26-125", "factura": null, "fecha": "2026-06-19", "cliente": "BOSS MACHINE SERVICE", "vendedor": "JPR", "motivo": "Otros", "cant": 0, "nparte": "", "envio_fabrica": null, "fecha_vb": "2026-06-19", "ciclo_dias": 0, "nota_credito": "SI", "estado_nc": "Pendiente", "obs": "LO MANDAN POR CARGUERO EN VEZ DE BUS"}, {"item": 26.0, "tipo": "DEVOLUCIÓN", "doc": "26-126", "factura": "57158.0", "fecha": "2026-06-23", "cliente": "INDUSTRIA MADERERA SAN CRISTOBAL S.A.C", "vendedor": "MSL", "motivo": "Error código (Cliente)", "cant": 2.0, "nparte": "3G4258CTP, 3G4259CTP", "envio_fabrica": null, "fecha_vb": "2026-06-23", "ciclo_dias": 0, "nota_credito": "SI", "estado_nc": "Pendiente", "obs": null}, {"item": 27.0, "tipo": "DEVOLUCIÓN", "doc": "26-127", "factura": "58340.0", "fecha": "2026-06-23", "cliente": "RENTRAC EQUIPOS Y SERVICIOS S.C.R.L", "vendedor": "MSL", "motivo": "Otros", "cant": 3.0, "nparte": "1611705CTP, 2968060CTP", "envio_fabrica": null, "fecha_vb": "2026-06-23", "ciclo_dias": 0, "nota_credito": "SI", "estado_nc": "Pendiente", "obs": null}, {"item": 28.0, "tipo": "DEVOLUCIÓN", "doc": "26-128", "factura": "258765.0", "fecha": "2026-06-25", "cliente": "ASENCIO QUILICHE SIXTO", "vendedor": "HRS", "motivo": "Difiere del original", "cant": 4.0, "nparte": "8R4568", "envio_fabrica": null, "fecha_vb": "2026-06-25", "ciclo_dias": 0, "nota_credito": "NO", "estado_nc": "No aplica", "obs": "LLEGÓ OXIDADO, YA SE ATENDIÓ AL CLIENTE EN OTRO PEDIDO"}, {"item": 29.0, "tipo": "DEVOLUCIÓN", "doc": "26-129", "factura": "BB02-00000630", "fecha": "2026-06-26", "cliente": "AMELIA MARTHA MALDONADO LAZARO", "vendedor": "SGC", "motivo": "No hay en stock", "cant": 1.0, "nparte": "2218874.0", "envio_fabrica": null, "fecha_vb": null, "ciclo_dias": null, "nota_credito": null, "estado_nc": "Sin dato", "obs": null}, {"item": 30.0, "tipo": "SIN TIPO", "doc": null, "factura": null, "fecha": null, "cliente": "aironcat", "vendedor": "Sin dato", "motivo": "Sin especificar", "cant": 0, "nparte": "", "envio_fabrica": null, "fecha_vb": null, "ciclo_dias": null, "nota_credito": null, "estado_nc": "Sin dato", "obs": null}];
+const C = {morado:'#6d4eff',teal:'#0bb89a',amber:'#f5a623',rojo:'#e5484d',azul:'#3b82f6',
+  ink:'#161d33',muted:'#6b7392',line:'#e3e7f2'};
+const PALETTE=[C.morado,C.teal,C.amber,C.azul,C.rojo,'#8b5cf6','#14b8a6','#f97316','#ec4899','#64748b'];
+Chart.defaults.font.family="'Exo 2', sans-serif";
+Chart.defaults.font.size=12;
+Chart.defaults.color=C.muted;
+
+let charts={};
+const $=id=>document.getElementById(id);
+
+function uniq(arr){return [...new Set(arr)].filter(Boolean).sort();}
+function fill(sel,vals){vals.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;sel.appendChild(o);});}
+fill($('f-tipo'),uniq(DATA.map(d=>d.tipo)));
+fill($('f-motivo'),uniq(DATA.map(d=>d.motivo)));
+fill($('f-vend'),uniq(DATA.map(d=>d.vendedor)));
+fill($('f-nc'),uniq(DATA.map(d=>d.estado_nc)));
+
+// periodo
+const fechas=DATA.map(d=>d.fecha).filter(Boolean).sort();
+const fmt=s=>{if(!s)return'—';const[y,m,d]=s.split('-');const M=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];return d+' '+M[+m-1]+' '+y;};
+$('m-periodo').textContent=fmt(fechas[0])+' — '+fmt(fechas[fechas.length-1]);
+$('f-fecha').textContent=new Date().toLocaleDateString('es-PE',{day:'2-digit',month:'long',year:'numeric'});
+
+function weekKey(s){const dt=new Date(s+'T00:00');const day=dt.getDay();const monday=new Date(dt);monday.setDate(dt.getDate()-((day+6)%7));return monday.toISOString().slice(0,10);}
+
+function getFiltered(){
+  const ft=$('f-tipo').value,fm=$('f-motivo').value,fv=$('f-vend').value,fn=$('f-nc').value;
+  return DATA.filter(d=>(!ft||d.tipo===ft)&&(!fm||d.motivo===fm)&&(!fv||d.vendedor===fv)&&(!fn||d.estado_nc===fn));
+}
+
+function countBy(rows,key){const m={};rows.forEach(r=>{const k=r[key]||'Sin dato';m[k]=(m[k]||0)+1;});return m;}
+function sortedEntries(obj){return Object.entries(obj).sort((a,b)=>b[1]-a[1]);}
+
+function render(){
+  const rows=getFiltered();
+  renderKPIs(rows);
+  renderMotivo(rows);
+  renderTipo(rows);
+  renderNC(rows);
+  renderVend(rows);
+  renderTrend(rows);
+  renderCiclo(rows);
+  renderCli(rows);
+  renderTable(rows);
+  recomputeRecos(rows);
+  $('f-total').textContent=rows.length;
+}
+
+function renderKPIs(rows){
+  const total=rows.length;
+  const dev=rows.filter(r=>r.tipo==='DEVOLUCIÓN').length;
+  const rec=rows.filter(r=>r.tipo==='RECLAMO').length;
+  const items=rows.reduce((s,r)=>s+(r.cant||0),0);
+  const pend=rows.filter(r=>r.estado_nc==='Pendiente').length;
+  const ciclos=rows.map(r=>r.ciclo_dias).filter(v=>v!==null&&v!==undefined);
+  const avgC=ciclos.length?(ciclos.reduce((a,b)=>a+b,0)/ciclos.length).toFixed(1):'—';
+  const clientes=new Set(rows.map(r=>r.cliente).filter(Boolean)).size;
+  const pctPend=total?Math.round(pend/total*100):0;
+  const k=[
+    {c:C.morado,l:'Total casos',v:total,s:dev+' devol. · '+rec+' reclamos'},
+    {c:C.teal,l:'Ítems devueltos',v:items,s:'unidades físicas'},
+    {c:C.azul,l:'Clientes',v:clientes,s:'con al menos 1 caso'},
+    {c:C.rojo,l:'NC pendientes',v:pend,s:pctPend+'% del total'},
+    {c:C.amber,l:'Ciclo promedio',v:avgC,s:'días a V°B° almacén'},
+    {c:C.morado,l:'Ratio devolución',v:total?Math.round(dev/total*100)+'%':'—',s:'vs. reclamos'},
+  ];
+  $('kpis').innerHTML=k.map(x=>`<div class="kpi"><div class="bar" style="background:${x.c}"></div>
+    <div class="lbl">${x.l}</div><div class="val" style="color:${x.c}">${x.v}</div><div class="sub">${x.s}</div></div>`).join('');
+}
+
+function mk(id,cfg){if(charts[id])charts[id].destroy();charts[id]=new Chart($(id),cfg);}
+
+function renderMotivo(rows){
+  const e=sortedEntries(countBy(rows,'motivo'));
+  const labels=e.map(x=>x[0]),vals=e.map(x=>x[1]);
+  const tot=vals.reduce((a,b)=>a+b,0);let cum=0;const cumline=vals.map(v=>{cum+=v;return tot?Math.round(cum/tot*100):0;});
+  mk('cMotivo',{data:{labels,datasets:[
+    {type:'bar',label:'Casos',data:vals,backgroundColor:C.morado,borderRadius:6,yAxisID:'y',order:2},
+    {type:'line',label:'% acumulado',data:cumline,borderColor:C.amber,backgroundColor:C.amber,
+     yAxisID:'y1',tension:.3,pointRadius:4,pointBackgroundColor:C.amber,order:1}
+  ]},options:{maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:true,position:'bottom'}},
+    scales:{x:{beginAtZero:true,ticks:{precision:0}},y1:{display:false,max:100}}}});
+  const top=e[0];
+  $('ins-motivo').innerHTML=top?`💡 <b>${top[0]}</b> concentra el <b>${Math.round(top[1]/tot*100)}%</b> de los casos. Si a esto se suma el error de código de vendedor, la <b>gestión de códigos de repuesto</b> es la palanca de mejora con mayor impacto.`:'';
+}
+
+function renderTipo(rows){
+  const m=countBy(rows,'tipo');const labels=Object.keys(m),vals=Object.values(m);
+  mk('cTipo',{type:'doughnut',data:{labels,datasets:[{data:vals,
+    backgroundColor:[C.morado,C.amber,C.muted],borderWidth:3,borderColor:'#fff'}]},
+    options:{maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom'}}}});
+}
+
+function renderNC(rows){
+  const order=['Pendiente','Pagado','No aplica','Sin dato'];
+  const m=countBy(rows,'estado_nc');
+  const labels=order.filter(o=>m[o]);const vals=labels.map(l=>m[l]);
+  const col={'Pendiente':C.rojo,'Pagado':C.teal,'No aplica':C.muted,'Sin dato':'#c3c9db'};
+  mk('cNC',{type:'doughnut',data:{labels,datasets:[{data:vals,
+    backgroundColor:labels.map(l=>col[l]),borderWidth:3,borderColor:'#fff'}]},
+    options:{maintainAspectRatio:false,cutout:'58%',plugins:{legend:{position:'right'}}}});
+  const pend=m['Pendiente']||0;const tot=vals.reduce((a,b)=>a+b,0);
+  $('ins-nc').innerHTML=pend?`⚠️ <b>${pend} notas de crédito pendientes</b> (${tot?Math.round(pend/tot*100):0}%) representan exposición financiera sin regularizar. Priorizar su cierre libera cuentas y mejora la relación con el cliente.`:'✅ Sin notas de crédito pendientes en la selección actual.';
+}
+
+function renderVend(rows){
+  const e=sortedEntries(countBy(rows,'vendedor'));
+  mk('cVend',{type:'bar',data:{labels:e.map(x=>x[0]),datasets:[{label:'Casos',data:e.map(x=>x[1]),
+    backgroundColor:e.map((_,i)=>PALETTE[i%PALETTE.length]),borderRadius:6}]},
+    options:{maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}}}});
+}
+
+function renderTrend(rows){
+  const wk={};rows.filter(r=>r.fecha).forEach(r=>{const k=weekKey(r.fecha);if(!wk[k])wk[k]={c:0,i:0};wk[k].c++;wk[k].i+=(r.cant||0);});
+  const keys=Object.keys(wk).sort();
+  const lbl=keys.map(k=>{const[y,m,d]=k.split('-');return 'Sem '+d+'/'+m;});
+  mk('cTrend',{data:{labels:lbl,datasets:[
+    {type:'line',label:'Casos',data:keys.map(k=>wk[k].c),borderColor:C.morado,backgroundColor:'rgba(109,78,255,.12)',
+     fill:true,tension:.35,pointRadius:4,pointBackgroundColor:C.morado,yAxisID:'y'},
+    {type:'bar',label:'Ítems',data:keys.map(k=>wk[k].i),backgroundColor:'rgba(11,184,154,.55)',borderRadius:5,yAxisID:'y'}
+  ]},options:{maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true,ticks:{precision:0}}}}});
+}
+
+function renderCiclo(rows){
+  const buckets={'Mismo día (0)':0,'1-2 días':0,'3-5 días':0,'6-10 días':0,'+10 días':0};
+  rows.forEach(r=>{const c=r.ciclo_dias;if(c===null||c===undefined)return;
+    if(c===0)buckets['Mismo día (0)']++;else if(c<=2)buckets['1-2 días']++;
+    else if(c<=5)buckets['3-5 días']++;else if(c<=10)buckets['6-10 días']++;else buckets['+10 días']++;});
+  mk('cCiclo',{type:'bar',data:{labels:Object.keys(buckets),datasets:[{label:'Casos',data:Object.values(buckets),
+    backgroundColor:[C.teal,'#5bc8a8',C.amber,'#f08a3c',C.rojo],borderRadius:6}]},
+    options:{maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10}}},y:{beginAtZero:true,ticks:{precision:0}}}}});
+}
+
+function renderCli(rows){
+  const e=sortedEntries(countBy(rows,'cliente')).slice(0,10);
+  mk('cCli',{type:'bar',data:{labels:e.map(x=>x[0].length>34?x[0].slice(0,32)+'…':x[0]),
+    datasets:[{label:'Casos',data:e.map(x=>x[1]),backgroundColor:C.azul,borderRadius:5}]},
+    options:{maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},
+      scales:{x:{beginAtZero:true,ticks:{precision:0}}}}});
+}
+
+let curRows=[];
+function renderTable(rows){
+  curRows=rows;
+  const q=($('search').value||'').toLowerCase();
+  const f=rows.filter(r=>!q||[r.cliente,r.doc,r.nparte,r.vendedor,r.motivo].some(v=>(v||'').toLowerCase().includes(q)));
+  const tag=(t,cls)=>`<span class="tag ${cls}">${t}</span>`;
+  const tipoTag=t=>t==='DEVOLUCIÓN'?tag('Devolución','t-dev'):t==='RECLAMO'?tag('Reclamo','t-rec'):tag(t||'—','t-na');
+  const ncTag=e=>e==='Pendiente'?tag('Pendiente','t-pend'):e==='Pagado'?tag('Pagado','t-pag'):tag(e||'—','t-na');
+  $('tbody').innerHTML=f.length?f.map(r=>`<tr>
+    <td><b>${r.doc||'—'}</b></td><td>${fmt(r.fecha)}</td><td>${tipoTag(r.tipo)}</td>
+    <td>${r.cliente||'—'}</td><td>${r.vendedor||'—'}</td><td>${r.motivo||'—'}</td>
+    <td style="text-align:center">${r.cant||0}</td><td style="font-size:11px">${r.nparte||'—'}</td>
+    <td style="text-align:center">${r.ciclo_dias!==null&&r.ciclo_dias!==undefined?r.ciclo_dias+'d':'—'}</td>
+    <td style="text-align:center">${r.nota_credito||'—'}</td><td>${ncTag(r.estado_nc)}</td></tr>`).join(''):
+    '<tr><td colspan="11" class="empty">Sin registros que coincidan con los filtros.</td></tr>';
+}
+
+/* ===================== MOTOR DE RECOMENDACIONES (reglas dinámicas) ===================== */
+function set(id,titulo,html){const el=$(id);if(el)el.innerHTML=`<span class="rt">${titulo}</span>${html}`;}
+function pct(a,b){return b?Math.round(a/b*100):0;}
+
+function recomputeRecos(rows){
+  const n=rows.length;
+  if(!n){['motivo','tipo','nc','vend','trend','ciclo','cli'].forEach(k=>set('reco-'+k,'Recomendación IA','Sin datos en la selección actual. Ajusta los filtros para ver recomendaciones.'));return;}
+
+  // ① MOTIVOS
+  const mot=sortedEntries(countBy(rows,'motivo'));
+  const top=mot[0];
+  const errCli=rows.filter(r=>r.motivo==='Error código (Cliente)').length;
+  const errVen=rows.filter(r=>r.motivo==='Error código (Vendedor)').length;
+  const errTot=errCli+errVen;
+  let rMot=`El motivo dominante es <b>${top[0]}</b> (${top[1]} casos, ${pct(top[1],n)}%). `;
+  if(errTot>0) rMot+=`Los errores de código suman <b>${errTot} casos</b> (${pct(errTot,n)}%): implementa un <b>checkpoint de verificación de código</b> contra SAP/Proficont —con imagen del repuesto— antes de emitir factura y en despacho. Es la acción de mayor impacto para reducir devoluciones en la fuente.`;
+  else rMot+=`Ataca primero esta causa: define un plan correctivo específico y mide su reducción semana a semana (principio de Pareto: pocas causas, la mayoría de los casos).`;
+  set('reco-motivo','Recomendación IA',rMot);
+
+  // ② TIPO
+  const dev=rows.filter(r=>r.tipo==='DEVOLUCIÓN').length, rec=rows.filter(r=>r.tipo==='RECLAMO').length;
+  let rTip;
+  if(dev>=rec) rTip=`Predominan las <b>devoluciones</b> (${pct(dev,n)}%), que se corrigen <b>antes de la venta</b>: reforzar validación de código, stock real y confirmación con el cliente. `;
+  else rTip=`Los <b>reclamos</b> pesan más (${pct(rec,n)}%), señal de <b>calidad/garantía</b>: coordina con el asesor técnico y activa reclamos de garantía al proveedor. `;
+  rTip+=`Separar ambos flujos permite asignar responsables y SLA distintos.`;
+  set('reco-tipo','Recomendación IA',rTip);
+
+  // ③ NC
+  const pend=rows.filter(r=>r.estado_nc==='Pendiente').length;
+  let rNC;
+  if(pend>0) rNC=`Hay <b>${pend} notas de crédito pendientes</b> (${pct(pend,n)}%) = dinero sin regularizar. Fija un <b>SLA de cierre ≤ 5 días</b>, asigna un responsable de conciliación y revisa semanalmente el saldo. Reducir este backlog libera cuentas y agiliza al cliente.`;
+  else rNC=`✅ Sin NC pendientes en la selección: mantén el ritmo y documenta el flujo actual como estándar para sostener este resultado.`;
+  set('reco-nc','Recomendación IA',rNC);
+
+  // ④ VENDEDOR
+  const ven=sortedEntries(countBy(rows,'vendedor')).filter(e=>e[0]!=='Sin dato');
+  let rVen='Sin datos de vendedor suficientes.';
+  if(ven.length){const t=ven[0];
+    rVen=`<b>${t[0]}</b> concentra ${t[1]} casos (${pct(t[1],n)}%). Antes de concluir, <b>normaliza por volumen de ventas</b>: alta devolución puede reflejar alto volumen. Si el ratio sigue alto, agenda retroalimentación 1-a-1 y refuerza la verificación de código en ese asesor.`;}
+  set('reco-vend','Recomendación IA',rVen);
+
+  // ⑤ TENDENCIA
+  const wk={};rows.filter(r=>r.fecha).forEach(r=>{const k=weekKey(r.fecha);wk[k]=(wk[k]||0)+1;});
+  const wks=Object.keys(wk).sort();
+  let rTr='Registra fechas para habilitar el análisis de tendencia.';
+  if(wks.length>=2){const ult=wk[wks[wks.length-1]],prev=wk[wks[wks.length-2]];
+    const dir=ult>prev?'al alza 📈':ult<prev?'a la baja 📉':'estable ➡️';
+    rTr=`La última semana registró <b>${ult} casos</b> vs. ${prev} de la previa — tendencia <b>${dir}</b>. `+
+      (ult>prev?`Investiga qué detonó el repunte (lote, proveedor o código específico) y actúa esta semana.`:`Consolida lo que está funcionando y vigila que no rebote.`);
+  }else if(wks.length===1){rTr=`Solo hay una semana con datos (${wk[wks[0]]} casos). Acumula más historial para detectar patrones y estacionalidad.`;}
+  set('reco-trend','Recomendación IA',rTr);
+
+  // ⑥ CICLO
+  const cic=rows.map(r=>r.ciclo_dias).filter(v=>v!==null&&v!==undefined);
+  let rCic='Sin fechas de V°B° para medir el ciclo.';
+  if(cic.length){const avg=(cic.reduce((a,b)=>a+b,0)/cic.length);
+    const rapidos=cic.filter(v=>v<=2).length; const lento=Math.max(...cic);
+    rCic=`Ciclo promedio <b>${avg.toFixed(1)} días</b>; el <b>${pct(rapidos,cic.length)}%</b> se resuelve en ≤2 días. `+
+      (lento>10?`Existe un caso extremo de <b>${lento} días</b>: audita ese flujo (pruebas de lab / envío a fábrica) y define un SLA formal de resolución.`:`Formaliza esta meta como SLA (ej. 90% en ≤3 días) para sostener el desempeño.`);
+  }
+  set('reco-ciclo','Recomendación IA',rCic);
+
+  // ⑦ CLIENTES
+  const cli=sortedEntries(countBy(rows,'cliente'));
+  let rCli='Sin datos de cliente.';
+  if(cli.length){const t=cli[0];const recu=cli.filter(e=>e[1]>1).length;
+    rCli=`<b>${t[0].length>40?t[0].slice(0,40)+'…':t[0]}</b> lidera con ${t[1]} caso(s). `+
+      (recu>0?`Hay <b>${recu} cliente(s) recurrente(s)</b>: revisa si repiten el mismo repuesto o motivo y arma un plan conjunto (capacitación de códigos, catálogo, condiciones) para cortar la reincidencia.`:`Sin reincidencia marcada; monitorea que ningún cliente escale su frecuencia.`);
+  }
+  set('reco-cli','Recomendación IA',rCli);
+}
+
+/* ===================== ANÁLISIS EJECUTIVO CON CLAUDE (API) ===================== */
+function buildSummary(rows){
+  const n=rows.length;
+  return {
+    total:n,
+    devoluciones:rows.filter(r=>r.tipo==='DEVOLUCIÓN').length,
+    reclamos:rows.filter(r=>r.tipo==='RECLAMO').length,
+    items:rows.reduce((s,r)=>s+(r.cant||0),0),
+    motivos:countBy(rows,'motivo'),
+    vendedores:countBy(rows,'vendedor'),
+    estado_nc:countBy(rows,'estado_nc'),
+    top_clientes:sortedEntries(countBy(rows,'cliente')).slice(0,5),
+    ciclo_promedio:(()=>{const c=rows.map(r=>r.ciclo_dias).filter(v=>v!=null);return c.length?+(c.reduce((a,b)=>a+b,0)/c.length).toFixed(1):null;})()
+  };
+}
+
+async function aiAnalyze(){
+  const btn=$('aiBtn'), exec=$('aiExec'), note=$('aiNote');
+  const rows=getFiltered();
+  if(!rows.length){note.textContent='No hay registros filtrados para analizar.';return;}
+  btn.disabled=true; btn.textContent='⏳ Analizando con Claude...';
+  note.textContent=''; exec.classList.remove('show');
+  const resumen=buildSummary(rows);
+  const prompt=`Eres analista de operaciones post-venta de Peru Tractor (importador de repuestos de maquinaria pesada CAT/CTP). Analiza estos datos AGREGADOS de devoluciones y reclamos (formato PT-DG-002) y responde SOLO con un JSON válido, sin markdown ni texto adicional.
+
+DATOS: ${JSON.stringify(resumen)}
+
+Devuelve exactamente esta estructura:
+{"resumen":"2-3 frases de diagnóstico ejecutivo con las cifras clave","prioridades":["acción concreta 1","acción concreta 2","acción concreta 3"],"riesgo":"el principal riesgo operativo o financiero detectado en una frase","meta":"una meta medible sugerida para el próximo mes"}
+
+Sé concreto, usa las cifras reales, en español, orientado a decisiones. No inventes datos que no estén en el resumen.`;
+  try{
+    const resp=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,messages:[{role:"user",content:prompt}]})
+    });
+    if(!resp.ok) throw new Error("HTTP "+resp.status);
+    const data=await resp.json();
+    let txt=data.content.filter(i=>i.type==='text').map(i=>i.text).join('').replace(/```json|```/g,'').trim();
+    const j=JSON.parse(txt);
+    exec.innerHTML=`<h4>🤖 Análisis ejecutivo · Claude</h4>
+      <p><b>Diagnóstico:</b> ${j.resumen}</p>
+      <p style="margin-top:8px"><b>Prioridades:</b></p>
+      <ul style="margin:4px 0 0 20px">${(j.prioridades||[]).map(p=>`<li>${p}</li>`).join('')}</ul>
+      <p style="margin-top:8px"><b>⚠️ Riesgo principal:</b> ${j.riesgo}</p>
+      <p style="margin-top:6px"><b>🎯 Meta sugerida:</b> ${j.meta}</p>`;
+    exec.classList.add('show');
+    note.textContent='Generado sobre '+rows.length+' registros filtrados.';
+  }catch(e){
+    note.innerHTML='⚠️ El análisis en vivo con Claude requiere ejecutarse dentro de Claude.ai. En Vercel, conéctalo mediante una función serverless con tu API key. Mientras tanto, las recomendaciones de cada gráfico (arriba) siguen activas y se actualizan con los filtros.';
+  }finally{
+    btn.disabled=false; btn.textContent='✨ Generar análisis ejecutivo';
+  }
+}
+$('aiBtn').addEventListener('click',aiAnalyze);
+
+['f-tipo','f-motivo','f-vend','f-nc'].forEach(id=>$(id).addEventListener('change',render));
+$('search').addEventListener('input',()=>renderTable(curRows));
+$('reset').addEventListener('click',()=>{['f-tipo','f-motivo','f-vend','f-nc'].forEach(id=>$(id).value='');$('search').value='';render();});
+
+render();
+</script>
+</body>
+</html>
